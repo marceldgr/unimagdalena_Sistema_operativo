@@ -1,0 +1,93 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <wait.h>
+
+int main(int argc, char const *argv[])
+{
+    int fd0[2];
+    int fd1[2];    
+    int fd2[2];
+    pipe(fd0);
+    pipe(fd1);
+    pipe(fd2);
+    char buffer[1024];
+    char linea[1024];
+    int i, n;
+    pid_t childs[3], padre = getpid();
+
+    
+    for( i = 0; i < 3; i++)
+    {
+        if(!(childs[i] = fork())) break;
+    }
+
+    
+    if (getpid() != padre) {
+        if(i == 0 && childs[0] == 0){
+            close(fd0[1]);
+            close(fd1[0]);
+            close(fd2[0]);
+            close(fd2[1]);
+            n = read(fd0[0],buffer,sizeof(buffer));
+            buffer[n] = '\0';
+            write(fd1[1],buffer,strlen(buffer));
+            close(fd0[0]);
+            close(fd1[1]);
+       }
+       
+       if (i == 1 && childs[1] == 0 ) {
+           close(fd0[0]);
+           close(fd0[1]);
+           close(fd1[1]);
+           close(fd2[0]);
+           n = read(fd1[0],buffer,sizeof(buffer));
+           buffer[n] = '\0';
+           write(fd2[1],buffer,strlen(buffer));
+           close(fd1[0]);
+           close(fd2[1]);
+       }
+       
+       if (i == 2 && childs[2] == 0) {
+           close(fd0[0]);
+           close(fd0[1]);
+           close(fd1[0]);
+           close(fd1[1]);
+           close(fd2[1]);
+           n = read(fd2[0],buffer,sizeof(buffer));
+           buffer[n] = '\0';
+           printf(" %s ",buffer);
+           close(fd2[0]);
+       }
+       
+    }else{
+        close(fd0[0]);
+        close(fd1[0]);
+        close(fd1[1]);
+        close(fd2[0]);
+        close(fd2[1]);
+
+        FILE *archivo;
+        archivo = fopen("prueba.txt", "r");
+        //Lee línea a línea y escribe en pantalla hasta el fin de fichero
+        while(fgets(linea, 1024, (FILE*) archivo)) {
+            printf(" %s ", linea);
+        }
+        strcpy(buffer,linea);
+        write(fd0[1],buffer,strlen(buffer));
+        close(fd0[1]);
+        fclose(archivo);
+    }
+    
+    if(padre == getpid()){
+       char b[500];
+       sprintf(b,"pstree -lp %d",getpid());
+       system(b);
+       for( i = 0; i < 3; i++) wait(NULL);        
+    }else{
+        sleep(2);
+    }     
+    
+    return 0;
+}
