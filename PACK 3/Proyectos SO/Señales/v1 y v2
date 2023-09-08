@@ -1,0 +1,45 @@
+Para esta sesión deberá realizar el ejercicio propuesto en el documento Una Introducción a las Señales en la sesión 3.2.
+
+Deberá intentar realizar el esquema de comunicación mostrado en la Figura 3.2. La idea es que el programa genere unos printf("[%d] <Proceso>\n", getpid()) de acuerdo al orden de la figura. Una salida básica sería:
+
+>./a.out
+
+[1254] Padre
+
+[1256] Hijo2
+
+[1255] Hijo1
+
+[1254] Padre
+
+Luego intente generar esta secuencia tantas veces como el usuario lo indique a través de un valor entero leído por teclado antes de la creación de los procesos hijos.
+
+Ejemplo de la ejecución v2:
+
+>./a.out
+
+Digite numero de veces
+
+3
+
+[1254] Padre
+
+[1256] Hijo2
+
+[1255] Hijo1
+
+[1254] Padre
+
+[1256] Hijo2
+
+[1255] Hijo1
+
+[1254] Padre
+
+[1256] Hijo2
+
+[1255] Hijo1
+
+[1254] Padre
+
+Si nota, se realizó tres veces el circulo descrito en la figura. La idea para lograr este comportamiento es asegurarse que los procesos hijos se pausan inmediatamente inicia su ejecución. Así, el padre, que tiene el primer turno deberá imprimir su mensaje y notificar al siguiente proceso que es su turno. Esta notificación es el envío de una señal. Posteriormente deberá pausarse él también. Si todo ha estado bien, el proceso hijo que recibe la señal saldrá del pause() e imprimirá, enviará la señal al proceso hijo hermano y se pausará a esperar la siguiente vuelta. y así respectivamente para cada proceso.
